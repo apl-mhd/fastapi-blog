@@ -27,6 +27,11 @@ class ShowUser(BaseModel):
     blogs : List[Blog] = []
     class Config():
         orm_mode = True  
+        
+class Login(BaseModel):
+    email: str
+    password: str
+    
 
 class ShowBlog(Blog):
     id: int
