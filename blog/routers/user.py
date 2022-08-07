@@ -1,37 +1,39 @@
-from operator import ge
-from fastapi import APIRouter, status,HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from fastapi import Depends 
 from typing import List
-from .. import schemas, database, models, hashing
+from database import get_db
+from models import User
+from schemas import ShowBlog
+import schemas
+from hashing import Hash
 
-Hash = hashing.Hash
-get_db = database.get_db
 
 router = APIRouter(
-    
-    prefix="/user",
-    tags=['User']
+    prefix='/user'
 )
 
 
-@router.post('/', response_model=schemas.ShowUser)
-def  create_user(request: schemas.User, db: Session = Depends(get_db)):
-    
-    new_user = models.User( name = request.name, email = request.email,
-                           password = Hash.bcrypt(request.password))
+@router.post('/', response_model=schemas.ShowUser, tags=['users'])
+def create_user(request:schemas.User, db:Session = Depends(get_db)):
+    new_user = User(name = request.name, email = request.email, password= Hash.hashed_password(request.password))
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    
     return new_user
 
 
-@router.get('/{id}', response_model=schemas.ShowUser)
-def get_user(id:int, db:Session = Depends(get_db)):
+
+@router.get('/', response_model=List[schemas.ShowUser], tags=['users'])
+def user_all(db:Session = Depends(get_db)):
+    users = db.query(User).all()
+    return users
+
+@router.get('/{id}', response_model=schemas.ShowUser, tags=['users'])
+def get_user(id, db:Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == id).first()
     
-    user = db.query(models.User).filter(models.User.id == id).first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail= f"Blog with id {id} is not available")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"user with id {id} not found")
     return user
+
+    

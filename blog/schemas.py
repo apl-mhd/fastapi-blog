@@ -1,57 +1,39 @@
-from unicodedata import name
+import email
 from pydantic import BaseModel
-from typing import List
+from typing import Optional, List
 
 
-class BlogBase(BaseModel):
+class Blog(BaseModel):
     title: str
     body: str
+    user_id: int
+    published: Optional[bool]
+    class Config():
+        orm_mode = True
     
-    class Config():
-        orm_mode = True
-        
-class Blog(BlogBase):
-    class Config():
-        orm_mode = True
-
 class User(BaseModel):
-    name: str
-    email: str
-    password: str
-    
-    class Config():
-        orm_mode = True
-    
-
-class ShowUser(BaseModel):
-    name: str
-    email: str
-    password: str
-    blogs: List[Blog] = []
-        
-    class Config():
-        orm_mode = True
-        
-
-class ShowBlog(BaseModel):
-    
     id: int
-    title: str
-    body: str
-    creator: ShowUser
-    
+    name: str
+    email: str
+    password: str
+    class Config():
+        orm_mode = True  
+        
+class ShowUser(BaseModel):
+    id: int
+    name: str
+    email: str
+    password: str
+    blogs : List[Blog] = []
+    class Config():
+        orm_mode = True  
+
+class ShowBlog(Blog):
+    id: int
+    creator: User
     class Config():
         orm_mode = True
+        
 
-
-class Login(BaseModel):
-    username: str
-    password: str
-    
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
-    
+        
 
