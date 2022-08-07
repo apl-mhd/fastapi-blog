@@ -1,3 +1,4 @@
+from lib2to3.pgen2 import token
 import secrets
 from fastapi import APIRouter, Depends, HTTPException, status
 import schemas
@@ -5,12 +6,9 @@ from database import session_local, get_db
 from sqlalchemy.orm import Session
 from models import User
 from hashing import Hash
-
+from jose import jwt
+from tokn import create_access_token
 router = APIRouter()
-
-# def verify_password(plain_password, hashed_password):
-#     return pwd_context.verify(plain_password, hashed_password)
-
 
 
 @router.post('/login')
@@ -23,6 +21,8 @@ def login(request: schemas.Login, db:Session = Depends(get_db)):
     
     if not  Hash.verify_password(request.password, user.password):
         raise HTTPException( status_code=status.HTTP_404_NOT_FOUND, detail=f' password  not matched')
+    access_token = create_access_token(data={"sub": user.email})
 
-    return user
+    return access_token
+    #return user
     
